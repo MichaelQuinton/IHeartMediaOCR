@@ -57,3 +57,6 @@ C:\Users\michaelquinton\Documents\Visual Studio 2015\Projects\ClearChannel\Clear
 C:\Users\michaelquinton\Documents\Visual Studio 2015\Projects\ClearChannel\ClearChannel\obj\x64\Debug\ClearChannel.application
 C:\Users\michaelquinton\Documents\Visual Studio 2015\Projects\ClearChannel\ClearChannel\obj\x64\Debug\ClearChannel.exe
 C:\Users\michaelquinton\Documents\Visual Studio 2015\Projects\ClearChannel\ClearChannel\obj\x64\Debug\ClearChannel.pdb
+C:\Users\michaelquinton\Documents\GitHub\IHeartMediaOcr\ClearChannel\bin\x64\Debug\ClearChannel.exe.config
+C:\Users\michaelquinton\Documents\GitHub\IHeartMediaOcr\ClearChannel\obj\x64\Debug\ClearChannel.exe
+C:\Users\michaelquinton\Documents\GitHub\IHeartMediaOcr\ClearChannel\obj\x64\Debug\ClearChannel.pdb

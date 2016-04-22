@@ -92,7 +92,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="itextsharp">
-      <HintPath>..\..\..\..\..\..\..\testbed\itextsharp-all-5.5.7\itextsharp-dll-core\itextsharp.dll</HintPath>
+      <HintPath>..\..\..\Visual Studio 2015\Projects\ClearChannel\ClearChannel\bin\x64\Release\itextsharp.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="Leadtools">
