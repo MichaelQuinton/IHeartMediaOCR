@@ -1,0 +1,2 @@
+C:\Users\michaelquinton\Documents\Visual Studio 2015\Projects\ClearChannel\LeadToolsOcr\obj\Release\LeadToolsOcr.csprojResolveAssemblyReference.cache
+C:\Users\michaelquinton\Documents\Visual Studio 2015\Projects\ClearChannel\LeadToolsOcr\obj\Release\LeadToolsOcr.g.resources

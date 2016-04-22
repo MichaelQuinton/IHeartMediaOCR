@@ -1,0 +1,5 @@
+C:\Users\michaelquinton\Documents\Visual Studio 2015\Projects\ClearChannel\Extention Methods\bin\Debug\Extention Methods.dll
+C:\Users\michaelquinton\Documents\Visual Studio 2015\Projects\ClearChannel\Extention Methods\bin\Debug\Extention Methods.pdb
+C:\Users\michaelquinton\Documents\Visual Studio 2015\Projects\ClearChannel\Extention Methods\obj\Debug\Extention Methods.dll
+C:\Users\michaelquinton\Documents\Visual Studio 2015\Projects\ClearChannel\Extention Methods\obj\Debug\Extention Methods.pdb
+C:\Users\michaelquinton\Documents\Visual Studio 2015\Projects\ClearChannel\Extention Methods\obj\Debug\ExtentionMethods.csprojResolveAssemblyReference.cache

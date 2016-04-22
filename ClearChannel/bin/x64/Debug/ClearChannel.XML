@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ClearChannel</name>
+    </assembly>
+    <members>
+        <member name="M:ClearChannel.LEADToolsOcr.GetAddressBlockText(Leadtools.Forms.Ocr.IOcrEngine,Leadtools.Pdf.PDFDocument)">
+            <summary>
+            Uses an instance of the LEADTools OCR Engine to "read" the text
+            in the pre-defined OCR region representing the mailing address
+            area.  Is thread safe.
+            </summary>
+            <param name="ocrEngine"></param>
+            <param name="document"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ClearChannel.LEADToolsOcr.Process(System.Collections.Generic.List{System.String},System.Collections.Generic.KeyValuePair{System.String,System.String})">
+            <summary>
+            Uses parallel processing to perform OCR on the mailing address region of the pdf files.
+            Calls other methods to update the pdf files with that OCR information and builds a
+            dictionary for file paths with associated page counts.
+            </summary>
+            <param name="inputFiles">List of files to be processed.</param>
+            <param name="currentFolder">Active input directory.</param>
+            <returns>Dictionary of file paths and associated page counts.</returns>
+        </member>
+        <member name="M:ClearChannel.LEADToolsOcr.SetupOcrWorkingDirectory">
+            <summary>
+            Creates or Cleans a working directory for the OCR engine.
+            </summary>
+        </member>
+        <member name="M:ClearChannel.PdfUtility.AddOverlayToCanvas(System.String,iTextSharp.text.pdf.PdfStamper)">
+            <summary>
+            Create the overlay to write out overtop of the files actual contents.
+            </summary>
+            <param name="ocrText">Text returned from the LEADTools OCR engine.</param>
+            <param name="stamper">itxtSharp object that contains file contents and allows overlays.</param>
+            <returns>The canvas for overlay.</returns>
+        </member>
+        <member name="M:ClearChannel.PdfUtility.CreateOrderedList(System.Collections.Generic.Dictionary{System.String,System.Int32})">
+            <summary>
+            Create a list of files ordered by their page counts.
+            </summary>
+            <param name="filePageCounts">Files and their associated page counts.</param>
+            <returns>An ordered List of file paths.</returns>
+        </member>
+        <member name="M:ClearChannel.PdfUtility.MergeAscendingPageCount(System.Collections.Generic.KeyValuePair{System.String,System.String},System.Collections.Generic.Dictionary{System.String,System.Int32})">
+            <summary>
+            Merges an ordered list of file by page count order and moves the file
+            to the correct output location.
+            </summary>
+            <param name="currentFolder">Current active input directory.</param>
+            <param name="filePageCounts">Dictionary of file paths and corresponding page counts.</param>
+        </member>
+        <member name="M:ClearChannel.PdfUtility.MergeOrderedList(System.Collections.Generic.List{System.String})">
+            <summary>
+            Takes an ordered list of files and merges them into one output file.
+            </summary>
+            <param name="mergeList">An ordered list of file paths.</param>
+            <returns>The path to merged file created in this method.</returns>
+        </member>
+        <member name="M:ClearChannel.PdfUtility.OverlayOcrText(System.String,System.String,System.Collections.Generic.KeyValuePair{System.String,System.String})">
+            <summary>
+            Reads in file contents, creates overlay of OCR text and marks first page before 
+            writing back overtop of the oringinal file.  Rotates contents based on whether files
+            are expected to be portrait or landscape.
+            </summary>
+            <param name="ocrText">The text return from the LEADTools OCR engine.</param>
+            <param name="filePath">The current file path to create the overlay for.</param>
+            <param name="currentFolder">Used to determine whether files should be portrait or landscape.</param>
+        </member>
+        <member name="M:ClearChannel.PdfUtility.RotateLandscapePages(iTextSharp.text.pdf.PdfReader)">
+            <summary>
+            Rotates pages that should be in portrait orientation.
+            </summary>
+            <param name="reader">The object holding the current pdf.</param>
+            <returns>The holding object after it may or may not have rotated pages.</returns>
+        </member>
+        <member name="M:ClearChannel.PdfUtility.RotatePortraitPages(iTextSharp.text.pdf.PdfReader)">
+            <summary>
+            Rotates pages that should be in landscape orientation.
+            </summary>
+            <param name="reader">The object holding the current pdf.</param>
+            <returns>The holding object after it may or may not have rotated pages.</returns>
+        </member>
+        <member name="M:ClearChannel.Program.Main">
+            <summary>
+            IHeart OCR and Merge Utility created by: Michael Quinton
+            
+            Takes the groups of input PDF files and performs OCR on the
+            mailing address.  OCR output is overlaid with a first page marking
+            onto the files, then all files are merged in page count order.  The 
+            resulting file is then moved to the appropriate drop folder.
+            </summary>
+        </member>
+        <member name="M:ClearChannel.Program.ArchiveInputFiles">
+            <summary>
+            Create a compressed folder with todays date.
+            Copy zip files used for input into compressed folder.
+            </summary>
+        </member>
+        <member name="M:ClearChannel.Program.CheckForInputFiles">
+            <summary>
+            Checks network input locations for files.
+            </summary>
+            <returns>True if input files are present.</returns>
+        </member>
+        <member name="M:ClearChannel.Program.ExtractZipFile(System.String,System.String,System.String)">
+            <summary>
+            Uses the SharpZipLib to unzip a file
+            </summary>
+            <param name="archiveFilenameIn">Location of the file to be unzipped</param>
+            <param name="outFolder">Where the unzipped files should be placed</param>
+            <param name="password">Optional parameter to allow for the handling of AES encrypted files.</param>
+        </member>
+        <member name="M:ClearChannel.Program.GetInputFiles(System.Collections.Generic.KeyValuePair{System.String,System.String})">
+            <summary>
+            Unzips PDF files into the local input folder.  If an error is encountered
+            unzipping files from a zip file an email with the corrupted zip file info
+            will be sent to the Laser Team.
+            </summary>
+            <param name="currentFolder">Current input folder.</param>
+        </member>
+        <member name="M:ClearChannel.Program.LoadInputFileList">
+            <summary>
+            Populate the inputFiles List with the file paths of files in the input folder.
+            </summary>
+        </member>
+        <member name="M:ClearChannel.Program.SendCorruptFileEmail(System.String)">
+            <summary>
+            Uses our smtp server to generate and send an email to Laser Team
+            that contains the corrupt zip file information.
+            </summary>
+            <param name="messageInsert">The error to be added to the message</param>
+        </member>
+        <member name="M:ClearChannel.Program.SetLeadtoolsLicense">
+            <summary>
+            Loads the LEADTools license to allow LEADTools functionality
+            to be used.
+            </summary>
+        </member>
+    </members>
+</doc>
