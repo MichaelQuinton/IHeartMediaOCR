@@ -3,3 +3,8 @@ C:\Users\michaelquinton\Documents\Visual Studio 2015\Projects\ClearChannel\Exten
 C:\Users\michaelquinton\Documents\Visual Studio 2015\Projects\ClearChannel\Extention Methods\obj\Release\Extention Methods.dll
 C:\Users\michaelquinton\Documents\Visual Studio 2015\Projects\ClearChannel\Extention Methods\obj\Release\Extention Methods.pdb
 C:\Users\michaelquinton\Documents\Visual Studio 2015\Projects\ClearChannel\Extention Methods\obj\Release\ExtentionMethods.csprojResolveAssemblyReference.cache
+C:\Users\michaelquinton\Documents\GitHub\IHeartMediaOcr\Extention Methods\bin\Release\Extention Methods.dll
+C:\Users\michaelquinton\Documents\GitHub\IHeartMediaOcr\Extention Methods\bin\Release\Extention Methods.pdb
+C:\Users\michaelquinton\Documents\GitHub\IHeartMediaOcr\Extention Methods\obj\Release\ExtentionMethods.csprojResolveAssemblyReference.cache
+C:\Users\michaelquinton\Documents\GitHub\IHeartMediaOcr\Extention Methods\obj\Release\Extention Methods.dll
+C:\Users\michaelquinton\Documents\GitHub\IHeartMediaOcr\Extention Methods\obj\Release\Extention Methods.pdb

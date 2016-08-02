@@ -1,13 +1,13 @@
-﻿using iTextSharp.text;
-using iTextSharp.text.pdf;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
-namespace ClearChannel
+﻿namespace ClearChannel
 {
-    class PdfUtility
+    using iTextSharp.text;
+    using iTextSharp.text.pdf;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+
+    internal static class PdfUtility
     {
         /// <summary>
         /// Create the overlay to write out overtop of the files actual contents.
@@ -15,21 +15,20 @@ namespace ClearChannel
         /// <param name="ocrText">Text returned from the LEADTools OCR engine.</param>
         /// <param name="stamper">itxtSharp object that contains file contents and allows overlays.</param>
         /// <returns>The canvas for overlay.</returns>
-        private static PdfContentByte AddOverlayToCanvas(string ocrText, PdfStamper stamper)
+        private static void AddOverlayToCanvas(string ocrText, PdfStamper stamper)
         {
-            BaseFont font = BaseFont.CreateFont(BaseFont.COURIER, BaseFont.CP1250, false);
-            PdfContentByte canvas = stamper.GetOverContent(1);
-            PdfGState gs1 = new PdfGState();
-
-            gs1.FillOpacity = 0.0f;
-            gs1.StrokeOpacity = 0.0f;
+            var font = BaseFont.CreateFont(BaseFont.COURIER, BaseFont.CP1250, false);
+            var canvas = stamper.GetOverContent(1);
+            var gs1 = new PdfGState
+            {
+                FillOpacity = 0.0f,
+                StrokeOpacity = 0.0f
+            };
 
             canvas.SetGState(gs1);
             canvas.SetFontAndSize(font, 1);
             canvas.ShowTextAligned(PdfContentByte.ALIGN_LEFT, ocrText, 25, 3, 0);
             canvas.ShowTextAligned(PdfContentByte.ALIGN_LEFT, @"PAGE-1", 3, 3, 0);
-
-            return canvas;
         }
 
         /// <summary>
@@ -39,17 +38,17 @@ namespace ClearChannel
         /// <returns>An ordered List of file paths.</returns>
         private static List<string> CreateOrderedList(Dictionary<string, int> filePageCounts)
         {
-            List<string> orderedList = new List<string>();
-            int numberOfPages = 1;
+            var orderedList = new List<string>();
+            var numberOfPages = 1;
 
             while (numberOfPages <= filePageCounts.Values.Max())
             {
+                var pages = numberOfPages;
                 var holder = from pair in filePageCounts
-                             where pair.Value == numberOfPages
+                             where pair.Value == pages
                              select pair.Key;
 
-                foreach (string file in holder.ToList())
-                    orderedList.Add(file);
+                orderedList.AddRange(holder.ToList());
 
                 numberOfPages++;
             }
@@ -64,12 +63,12 @@ namespace ClearChannel
         /// <param name="filePageCounts">Dictionary of file paths and corresponding page counts.</param>
         internal static void MergeAscendingPageCount(KeyValuePair<string, string> currentFolder, Dictionary<string, int> filePageCounts)
         {
-            string outputFolder = Constants.outputFolders[currentFolder.Key.ToString()];
-            string moveLocation = Path.Combine(Constants.outputDirectory, outputFolder + @"\" + outputFolder + ".pdf");
+            var outputFolder = Constants.OutputFolders[currentFolder.Key];
+            var moveLocation = Path.Combine(Constants.OutputDirectory, outputFolder + @"\" + outputFolder + ".pdf");
 
-            List<string> orderedList = CreateOrderedList(filePageCounts);
+            var orderedList = CreateOrderedList(filePageCounts);
 
-            string fileToMove = MergeOrderedList(orderedList);
+            var fileToMove = MergeOrderedList(orderedList);
 
             File.Move(fileToMove, moveLocation);
 
@@ -81,41 +80,38 @@ namespace ClearChannel
         /// </summary>
         /// <param name="mergeList">An ordered list of file paths.</param>
         /// <returns>The path to merged file created in this method.</returns>
-        private static string MergeOrderedList(List<string> mergeList)
+        private static string MergeOrderedList(IEnumerable<string> mergeList)
         {
-            int counter = 0;
-            string filename = Guid.NewGuid() + ".pdf";
-            string outfileFullPath = Path.Combine(Constants.inputDirectory.FullName, filename);
+            var filename = Guid.NewGuid() + ".pdf";
+            var outfileFullPath = Path.Combine(Constants.InputDirectory.FullName, filename);
 
             using (var stream = new FileStream(outfileFullPath, FileMode.Create))
             using (var doc = new Document())
             using (var pdf = new PdfCopy(doc, stream))
             {
                 PdfReader reader = null;
-                PdfImportedPage page = null;
 
                 doc.Open();
 
-                foreach (string file in mergeList)
+                foreach (var file in mergeList)
                 {
                     reader = new PdfReader(file);
-                    for (int i = 0; i < reader.NumberOfPages; i++)
+                    for (var i = 0; i < reader.NumberOfPages; i++)
                     {
-                        page = pdf.GetImportedPage(reader, i + 1);
+                        var page = pdf.GetImportedPage(reader, i + 1);
                         pdf.AddPage(page);
                     }
-                    counter++;
                 }
 
                 pdf.FreeReader(reader);
-                reader.Close();
+                reader?.Close();
             }
 
             return outfileFullPath;
         }
 
         /// <summary>
-        /// Reads in file contents, creates overlay of OCR text and marks first page before 
+        /// Reads in file contents, creates overlay of OCR text and marks first page before
         /// writing back overtop of the oringinal file.  Rotates contents based on whether files
         /// are expected to be portrait or landscape.
         /// </summary>
@@ -124,27 +120,22 @@ namespace ClearChannel
         /// <param name="currentFolder">Used to determine whether files should be portrait or landscape.</param>
         internal static void OverlayOcrText(string ocrText, string filePath, KeyValuePair<string, string> currentFolder)
         {
-            byte[] pdf = null;
             var reader = new PdfReader(filePath);
-            var streamPDF = new MemoryStream();
+            var streamPdf = new MemoryStream();
 
             PdfReader.unethicalreading = true;
 
-            if (currentFolder.Key.ToString() != "PremierLandscape")
-                reader = RotateLandscapePages(reader);
-            else
-                reader = RotatePortraitPages(reader);
+            reader = currentFolder.Key != "PremierLandscape" ? RotateLandscapePages(reader) : RotatePortraitPages(reader);
 
-
-            using (var stamper = new PdfStamper(reader, streamPDF, '\0', true))
+            using (var stamper = new PdfStamper(reader, streamPdf, '\0', true))
             {
                 stamper.RotateContents = false;
-                PdfContentByte canvas = AddOverlayToCanvas(ocrText, stamper);
+                AddOverlayToCanvas(ocrText, stamper);
             }
 
-            pdf = streamPDF.ToArray();
+            var pdf = streamPdf.ToArray();
 
-            streamPDF.Dispose();
+            streamPdf.Dispose();
             reader.Dispose();
 
             File.WriteAllBytes(filePath, pdf);
@@ -157,20 +148,18 @@ namespace ClearChannel
         /// <returns>The holding object after it may or may not have rotated pages.</returns>
         private static PdfReader RotateLandscapePages(PdfReader reader)
         {
-            int n = reader.NumberOfPages;
+            var n = reader.NumberOfPages;
 
-            for (int page = 0; page < n;)
+            for (var page = 0; page < n;)
             {
                 ++page;
 
-                float width = reader.GetPageSize(page).Width;
-                float height = reader.GetPageSize(page).Height;
+                var width = reader.GetPageSize(page).Width;
+                var height = reader.GetPageSize(page).Height;
 
-                if (width > height)
-                {
-                    PdfDictionary pageDict = reader.GetPageN(page);
-                    pageDict.Put(PdfName.ROTATE, new PdfNumber(90));
-                }
+                if (!(width > height)) continue;
+                var pageDict = reader.GetPageN(page);
+                pageDict.Put(PdfName.ROTATE, new PdfNumber(90));
             }
             return reader;
         }
@@ -182,22 +171,17 @@ namespace ClearChannel
         /// <returns>The holding object after it may or may not have rotated pages.</returns>
         private static PdfReader RotatePortraitPages(PdfReader reader)
         {
-            int n = reader.NumberOfPages;
-
-            for (int page = 0; page < n;)
+            var pageCount = reader.NumberOfPages;
+            
+            for (var p = 1; p <= pageCount; p++)
             {
-                ++page;
-
-                float width = reader.GetPageSize(page).Width;
-                float height = reader.GetPageSize(page).Height;
-
-                if (height > width)
-                {
-                    PdfDictionary pageDict = reader.GetPageN(page);
-                    pageDict.Put(PdfName.ROTATE, new PdfNumber(90));
-                }
+                if (reader.GetPageSize(p).Width > reader.GetPageSize(p).Height) continue;
+                var page = reader.GetPageN(p);
+                
+                var rotate = page.GetAsNumber(PdfName.ROTATE);
+                page.Put(PdfName.ROTATE, rotate == null ? new PdfNumber(90) : new PdfNumber((rotate.IntValue + 90)%360));
             }
             return reader;
         }
-    } 
+    }
 }

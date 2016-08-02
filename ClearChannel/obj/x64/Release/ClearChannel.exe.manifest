@@ -49,7 +49,7 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>yLnwPhBWDDL5PcHf1AobGicMKPocwe+ubqI6PqFR64Q=</dsig:DigestValue>
+        <dsig:DigestValue>4XWTGzJQhOzR3Iqa/46Hc1lvryKnAo/lV5o39P71VPY=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -73,7 +73,7 @@
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>ozUwjGynv2DHrtctx02ss2mq7bfcV1KzMvx4KIiqSzw=</dsig:DigestValue>
+        <dsig:DigestValue>UXCxkTxwQGu+eVz966SeaPXdGlQJF9cXm1+zd5nGGfE=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -473,13 +473,13 @@
       </hash>
     </dependentAssembly>
   </dependency>
-  <file name="ClearChannel.exe.config" size="176">
+  <file name="ClearChannel.exe.config" size="174">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>UTxdd97mY0M1+gBwsZN04Fg7EGGCuoFtoROYgwP949I=</dsig:DigestValue>
+      <dsig:DigestValue>YP2igrvBrrg2sVjdbd5SPlIls2XMb8AzjauegjR7Hi0=</dsig:DigestValue>
     </hash>
   </file>
   <file name="OcrRuntime\Advantage.de.bin" size="2395687">

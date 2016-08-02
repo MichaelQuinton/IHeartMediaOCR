@@ -1,30 +1,32 @@
-﻿using ICSharpCode.SharpZipLib.Core;
-using Leadtools;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
-using System.Net;
-using System.Net.Mail;
-using System.Threading.Tasks;
-using SharpZip = ICSharpCode.SharpZipLib.Zip;
-
-namespace ClearChannel
+﻿namespace ClearChannel
 {
-    class Program
+    using Extention_Methods;
+    using ICSharpCode.SharpZipLib.Core;
+    using Leadtools;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.IO.Compression;
+    using System.Linq;
+    using System.Net;
+    using System.Net.Mail;
+    using System.Threading.Tasks;
+    using SharpZip = ICSharpCode.SharpZipLib.Zip;
+
+    internal class Program
     {
-        private static List<string> inputFiles = new List<string>();
-        private static Dictionary<string, int> filePageCounts = new Dictionary<string, int>();
+        private static readonly List<string> InputFiles = new List<string>();
+        private static Dictionary<string, int> _filePageCounts = new Dictionary<string, int>();
 
         /// <summary>
         /// IHeart OCR and Merge Utility created by: Michael Quinton
-        /// 
+        ///
         /// Takes the groups of input PDF files and performs OCR on the
         /// mailing address.  OCR output is overlaid with a first page marking
-        /// onto the files, then all files are merged in page count order.  The 
+        /// onto the files, then all files are merged in page count order.  The
         /// resulting file is then moved to the appropriate drop folder.
         /// </summary>
-        static void Main()
+        private static void Main()
         {
             Console.WriteLine("IHeart Media OCR and Merge Utility");
             if (!CheckForInputFiles())
@@ -32,31 +34,29 @@ namespace ClearChannel
 
             SetLeadtoolsLicense();
 
-            foreach (KeyValuePair<string, string> currentFolder in Constants.inputFolders)
+            foreach (var currentFolder in Constants.InputFolders)
             {
-                Constants.inputDirectory.DeleteAllContents();
+                Constants.InputDirectory.DeleteAllContents();
                 GetInputFiles(currentFolder);
 
-                if (Constants.inputDirectory.IsEmpty())
+                if (Constants.InputDirectory.IsEmpty())
                     continue;
 
                 LoadInputFileList();
 
-                filePageCounts = LEADToolsOcr.Process(inputFiles, currentFolder);
+                _filePageCounts = LeadToolsOcr.Process(InputFiles, currentFolder);
 
-                PdfUtility.MergeAscendingPageCount(currentFolder, filePageCounts);
+                PdfUtility.MergeAscendingPageCount(currentFolder, _filePageCounts);
 
-                inputFiles.Clear();
-                filePageCounts.Clear();
+                InputFiles.Clear();
+                _filePageCounts.Clear();
 
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
             }
-            Constants.inputDirectory.DeleteAllContents();
+            Constants.InputDirectory.DeleteAllContents();
             ArchiveInputFiles();
             DeleteOldErrorLogs();
-            
-            return;
         }
 
         /// <summary>
@@ -65,19 +65,19 @@ namespace ClearChannel
         /// </summary>
         private static void ArchiveInputFiles()
         {
-            string fileName = "Clear Channel " + DateTime.Now.ToString("MMM_d_yyyy") + ".zip";
-            string zipArchivePath = Path.Combine(Constants.archiveDirectory, fileName);
+            var fileName = "Clear Channel " + DateTime.Now.ToString("MMM_d_yyyy") + ".zip";
+            var zipArchivePath = Path.Combine(Constants.ArchiveDirectory, fileName);
 
             using (var stream = new FileStream(zipArchivePath, FileMode.Create))
             using (var zip = new ZipArchive(stream, ZipArchiveMode.Create))
-                foreach (KeyValuePair<string, string> currentFolder in Constants.inputFolders)
+                foreach (var currentFolder in Constants.InputFolders)
                 {
-                    string filePath = Path.Combine(Constants.networkFTPDir, currentFolder.Value.ToString() + "/");
-                    string[] files = Directory.GetFiles(filePath);
+                    var filePath = Path.Combine(Constants.NetworkFtpDir, currentFolder.Value + "/");
+                    var files = Directory.GetFiles(filePath);
 
-                    foreach (string file in files)
+                    foreach (var file in files)
                     {
-                        string zipPath = currentFolder.Key.ToString() + "/" + Path.GetFileName(file);
+                        var zipPath = currentFolder.Key + "/" + Path.GetFileName(file);
                         zip.CreateEntryFromFile(file, zipPath, CompressionLevel.Optimal);
                     }
                 }
@@ -89,14 +89,8 @@ namespace ClearChannel
         /// <returns>True if input files are present.</returns>
         private static bool CheckForInputFiles()
         {
-            foreach (KeyValuePair<string, string> currentFolder in Constants.inputFolders)
-            {
-                var directory = new DirectoryInfo(Path.Combine(Constants.networkFTPDir, currentFolder.Value.ToString()));
-
-                if (!directory.IsEmpty())
-                    return true;
-            }
-            return false;
+            return Constants.InputFolders.Select(currentFolder =>
+                new DirectoryInfo(Path.Combine(Constants.NetworkFtpDir, currentFolder.Value.ToString()))).Any(directory => !directory.IsEmpty());
         }
 
         /// <summary>
@@ -104,7 +98,7 @@ namespace ClearChannel
         /// </summary>
         private static void DeleteOldErrorLogs()
         {
-            foreach (var file in Constants.errorLogDirectory.GetFiles())
+            foreach (var file in Constants.ErrorLogDirectory.GetFiles())
                 if (file.CreationTime < DateTime.Now.AddMonths(-1))
                     file.Delete();
         }
@@ -119,12 +113,12 @@ namespace ClearChannel
         {
             try
             {
-                using (FileStream fs = File.OpenRead(archiveFilenameIn))
+                using (var fs = File.OpenRead(archiveFilenameIn))
                 using (var zf = new SharpZip.ZipFile(fs))
                 {
                     zf.IsStreamOwner = true;
 
-                    if (!String.IsNullOrEmpty(password))
+                    if (!string.IsNullOrEmpty(password))
                         zf.Password = password;  //AES encrypted entries are handled automatically
 
                     foreach (SharpZip.ZipEntry zipEntry in zf)
@@ -132,25 +126,24 @@ namespace ClearChannel
                         if (!zipEntry.IsFile)
                             continue;   //Ignore Directories
 
-                        String entryFileName = zipEntry.Name;
+                        var entryFileName = zipEntry.Name;
 
                         if (!entryFileName.EndsWith(".pdf", StringComparison.InvariantCultureIgnoreCase))
                             continue;
 
-                        byte[] buffer = new byte[4096];
-                        Stream zipStream = zf.GetInputStream(zipEntry);
+                        var buffer = new byte[4096];
+                        var zipStream = zf.GetInputStream(zipEntry);
 
-                        String fullZipToPath = Path.Combine(outFolder, entryFileName);
-                        string directoryName = Path.GetDirectoryName(fullZipToPath);
+                        var fullZipToPath = Path.Combine(outFolder, entryFileName);
 
-                        using (FileStream streamWriter = File.Create(fullZipToPath))
+                        using (var streamWriter = File.Create(fullZipToPath))
                             StreamUtils.Copy(zipStream, streamWriter, buffer);
                     }
                 }
             }
             catch (Exception)
             {
-                string errorMessage = archiveFilenameIn + " was unable to be opened. File is likely corrupted.";
+                var errorMessage = archiveFilenameIn + " was unable to be opened. File is likely corrupted.";
                 try
                 {
                     SendCorruptFileEmail(errorMessage);
@@ -159,11 +152,9 @@ namespace ClearChannel
                 {
                     LogErrorToFile(archiveFilenameIn, errorMessage);
                 }
-
-
             }
         }
-        
+
         /// <summary>
         /// Unzips PDF files into the local input folder.  If an error is encountered
         /// unzipping files from a zip file an email with the corrupted zip file info
@@ -172,12 +163,12 @@ namespace ClearChannel
         /// <param name="currentFolder">Current input folder.</param>
         private static void GetInputFiles(KeyValuePair<string, string> currentFolder)
         {
-            string zipPath = Path.Combine(Constants.networkFTPDir, currentFolder.Value.ToString());
-            string[] files = Directory.GetFiles(zipPath);
+            var zipPath = Path.Combine(Constants.NetworkFtpDir, currentFolder.Value);
+            var files = Directory.GetFiles(zipPath);
 
             Parallel.ForEach(files, file =>
             {
-                ExtractZipFile(file, Constants.inputDirectory.FullName);
+                ExtractZipFile(file, Constants.InputDirectory.FullName);
             });
         }
 
@@ -186,11 +177,11 @@ namespace ClearChannel
         /// </summary>
         private static void LoadInputFileList()
         {
-            FileInfo[] filePaths = Constants.inputDirectory.GetFiles("*.pdf");
+            var filePaths = Constants.InputDirectory.GetFiles("*.pdf");
 
-            foreach (FileInfo path in filePaths)
+            foreach (var path in filePaths)
                 if (path.Length > 0)
-                    inputFiles.Add(path.FullName);
+                    InputFiles.Add(path.FullName);
         }
 
         /// <summary>
@@ -200,10 +191,10 @@ namespace ClearChannel
         /// <param name="errorMessage"></param>
         private static void LogErrorToFile(string archiveFilenameIn, string errorMessage)
         {
-            if (!Constants.errorLogDirectory.Exists)
-                Constants.errorLogDirectory.Create();
+            if (!Constants.ErrorLogDirectory.Exists)
+                Constants.ErrorLogDirectory.Create();
 
-            File.WriteAllText(Path.Combine(Constants.errorLogDirectory.FullName,
+            File.WriteAllText(Path.Combine(Constants.ErrorLogDirectory.FullName,
                 Path.GetFileName(archiveFilenameIn) + " " + DateTime.Now.ToString("MMddyyyy") + ".txt"), errorMessage);
         }
 
@@ -214,15 +205,17 @@ namespace ClearChannel
         /// <param name="messageInsert">The error to be added to the message</param>
         private static void SendCorruptFileEmail(string messageInsert)
         {
-            string subject = "ERROR: Corrupted Files Encountered";
-            string message = "This is an automatically generated message, please DO NOT respond. \r\n\r\n" + messageInsert;
+            const string subject = "ERROR: Corrupted Files Encountered";
+            var message = "This is an automatically generated message, please DO NOT respond. \r\n\r\n" + messageInsert;
+            const string user = @"iheartreport@wearebluegrass.com";
+            const string password = @"Uer?5E.k";
 
             var client = new SmtpClient("CERBERUS.bgms.local")
             {
-                Credentials = new NetworkCredential("michael.quinton@wearebluegrass.com", "bgms16"),
+                Credentials = new NetworkCredential(user, password),
                 EnableSsl = true
             };
-            client.Send("ihearterrors@wearebluegrass.com", "michael.quinton@wearebluegrass.com", subject, message);
+            client.Send("ihearterrors@wearebluegrass.com", "LaserTeam@wearebluegrass.com", subject, message);
         }
 
         /// <summary>
@@ -231,8 +224,7 @@ namespace ClearChannel
         /// </summary>
         private static void SetLeadtoolsLicense()
         {
-            RasterSupport.SetLicense(Constants.LEAD_LICENSE, Constants.LEAD_KEY);
+            RasterSupport.SetLicense(Constants.LeadLicense, Constants.LeadKey);
         }
-    } 
+    }
 }
-
